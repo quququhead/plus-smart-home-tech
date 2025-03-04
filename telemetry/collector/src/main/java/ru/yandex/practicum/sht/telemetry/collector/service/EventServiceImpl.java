@@ -43,19 +43,19 @@ public class EventServiceImpl implements EventService {
                 .setId(event.getId())
                 .setHubId(event.getHubId())
                 .setTimestamp(event.getTimestamp())
+                .setPayload(switch (event.getType()) {
+                    case SensorEventType.CLIMATE_SENSOR_EVENT ->
+                            SensorEventMapper.mapToClimateSensorAvro((ClimateSensorEvent) event);
+                    case SensorEventType.LIGHT_SENSOR_EVENT ->
+                            SensorEventMapper.mapToLightSensorAvro((LightSensorEvent) event);
+                    case SensorEventType.MOTION_SENSOR_EVENT ->
+                            SensorEventMapper.mapToMotionSensorAvro((MotionSensorEvent) event);
+                    case SensorEventType.SWITCH_SENSOR_EVENT ->
+                            SensorEventMapper.mapToSwitchSensorAvro((SwitchSensorEvent) event);
+                    case SensorEventType.TEMPERATURE_SENSOR_EVENT ->
+                            SensorEventMapper.mapToTemperatureSensorAvro((TemperatureSensorEvent) event);
+                })
                 .build();
-        switch (event.getType()) {
-            case SensorEventType.CLIMATE_SENSOR_EVENT ->
-                    sensorEventAvro.setPayload(SensorEventMapper.mapToClimateSensorAvro((ClimateSensorEvent) event));
-            case SensorEventType.LIGHT_SENSOR_EVENT ->
-                    sensorEventAvro.setPayload(SensorEventMapper.mapToLightSensorAvro((LightSensorEvent) event));
-            case SensorEventType.MOTION_SENSOR_EVENT ->
-                    sensorEventAvro.setPayload(SensorEventMapper.mapToMotionSensorAvro((MotionSensorEvent) event));
-            case SensorEventType.SWITCH_SENSOR_EVENT ->
-                    sensorEventAvro.setPayload(SensorEventMapper.mapToSwitchSensorAvro((SwitchSensorEvent) event));
-            case SensorEventType.TEMPERATURE_SENSOR_EVENT ->
-                    sensorEventAvro.setPayload(SensorEventMapper.mapToTemperatureSensorAvro((TemperatureSensorEvent) event));
-        }
         producer.send(new ProducerRecord<>(sensorTopic, sensorEventAvro));
     }
 
@@ -64,17 +64,17 @@ public class EventServiceImpl implements EventService {
         HubEventAvro hubEventAvro = HubEventAvro.newBuilder()
                 .setHubId(event.getHubId())
                 .setTimestamp(event.getTimestamp())
+                .setPayload(switch (event.getType()) {
+                    case HubEventType.DEVICE_ADDED ->
+                            HubEventMapper.mapToDeviceAddedEventAvro((DeviceAddedEvent) event);
+                    case HubEventType.DEVICE_REMOVED ->
+                            HubEventMapper.mapToDeviceRemovedEventAvro((DeviceRemovedEvent) event);
+                    case HubEventType.SCENARIO_ADDED ->
+                            HubEventMapper.mapToScenarioAddedEventAvro((ScenarioAddedEvent) event);
+                    case HubEventType.SCENARIO_REMOVED ->
+                            HubEventMapper.mapToScenarioRemovedEventAvro((ScenarioRemovedEvent) event);
+                })
                 .build();
-        switch (event.getType()) {
-            case HubEventType.DEVICE_ADDED ->
-                    hubEventAvro.setPayload(HubEventMapper.mapToDeviceAddedEventAvro((DeviceAddedEvent) event));
-            case HubEventType.DEVICE_REMOVED ->
-                    hubEventAvro.setPayload(HubEventMapper.mapToDeviceRemovedEventAvro((DeviceRemovedEvent) event));
-            case HubEventType.SCENARIO_ADDED ->
-                    hubEventAvro.setPayload(HubEventMapper.mapToScenarioAddedEventAvro((ScenarioAddedEvent) event));
-            case HubEventType.SCENARIO_REMOVED ->
-                    hubEventAvro.setPayload(HubEventMapper.mapToScenarioRemovedEventAvro((ScenarioRemovedEvent) event));
-        }
         producer.send(new ProducerRecord<>(hubTopic, hubEventAvro));
     }
 }
