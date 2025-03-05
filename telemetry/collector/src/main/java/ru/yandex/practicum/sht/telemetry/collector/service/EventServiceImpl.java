@@ -13,6 +13,7 @@ import ru.yandex.practicum.sht.telemetry.collector.mapper.HubEventMapper;
 import ru.yandex.practicum.sht.telemetry.collector.mapper.SensorEventMapper;
 import ru.yandex.practicum.sht.telemetry.collector.model.*;
 
+import java.time.Duration;
 import java.util.Properties;
 
 @Service
@@ -34,7 +35,8 @@ public class EventServiceImpl implements EventService {
 
     @PreDestroy
     public void stop() {
-        producer.close();
+        producer.flush();
+        producer.close(Duration.ofMillis(10));
     }
 
     @Override
