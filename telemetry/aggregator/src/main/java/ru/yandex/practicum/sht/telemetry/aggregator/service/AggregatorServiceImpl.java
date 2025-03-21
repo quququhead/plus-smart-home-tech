@@ -24,7 +24,7 @@ public class AggregatorServiceImpl implements AggregatorService {
                 .build()
         );
         SensorStateAvro oldState = snapshot.getSensorsState().get(event.getId());
-        if (oldState != null && oldState.getTimestamp().isBefore(event.getTimestamp()) && oldState.getData().equals(event.getPayload())) {
+        if (oldState != null && oldState.getTimestamp().isAfter(event.getTimestamp()) && oldState.getData().equals(event.getPayload())) {
             return Optional.empty();
         }
         SensorStateAvro newState = SensorStateAvro.newBuilder()
@@ -32,7 +32,7 @@ public class AggregatorServiceImpl implements AggregatorService {
                 .setData(event.getPayload())
                 .build();
         snapshot.getSensorsState().put(event.getId(), newState);
-        snapshot.setTimestamp(event.getTimestamp());
+        snapshot.setTimestamp(newState.getTimestamp());
         snapshots.put(snapshot.getHubId(), snapshot);
         return Optional.of(snapshot);
     }
