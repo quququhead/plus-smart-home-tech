@@ -15,11 +15,9 @@ import ru.yandex.practicum.sht.telemetry.aggregator.configuration.KafkaConfig;
 import ru.yandex.practicum.sht.telemetry.aggregator.configuration.KafkaConfig.TopicType;
 
 import java.time.Duration;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
+import static ru.yandex.practicum.sht.telemetry.aggregator.configuration.KafkaConfig.TopicType.SENSORS_EVENTS;
 import static ru.yandex.practicum.sht.telemetry.aggregator.configuration.KafkaConfig.TopicType.SNAPSHOTS_EVENTS;
 
 @Component
@@ -39,14 +37,14 @@ public class AggregationStarter {
         this.consumer = kafkaConsumer;
         this.producer = kafkaProducer;
         this.consumerTopics = kafka.getConsumer().getTopics();
-        this.producerTopics = kafka.getConsumer().getTopics();
+        this.producerTopics = kafka.getProducer().getTopics();
         this.aggregatorService = aggregatorService;
     }
 
     public void start() {
         try {
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
-            consumer.subscribe(consumerTopics.values());
+            consumer.subscribe(List.of(consumerTopics.get(SENSORS_EVENTS)));
             while (true) {
                 ConsumerRecords<String, SensorEventAvro> consumerRecords = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
                 for (ConsumerRecord<String, SensorEventAvro> consumerRecord : consumerRecords) {
