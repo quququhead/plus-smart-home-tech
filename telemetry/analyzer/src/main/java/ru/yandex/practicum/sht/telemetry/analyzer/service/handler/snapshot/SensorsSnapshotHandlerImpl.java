@@ -9,7 +9,7 @@ import ru.yandex.practicum.sht.telemetry.analyzer.model.Scenario;
 import ru.yandex.practicum.sht.telemetry.analyzer.repository.ScenarioRepository;
 import ru.yandex.practicum.sht.telemetry.analyzer.service.HubActionSender;
 
-import java.util.List;
+import java.util.Collection;
 
 @Component
 @RequiredArgsConstructor
@@ -22,11 +22,11 @@ public class SensorsSnapshotHandlerImpl implements SensorsSnapshotHandler {
         String hubId = snapshot.getHubId();
         scenarioRepository.findByHubId(hubId).stream()
                 .filter(scenario -> isReady(scenario, snapshot))
-                .forEach(scenario -> runActions(hubId, scenario.getName(), scenario.getActions()));
+                .forEach(scenario -> runActions(hubId, scenario.getName(), scenario.getActions().values()));
     }
 
     private boolean isReady(Scenario scenario, SensorsSnapshotAvro snapshot) {
-        for (Condition condition : scenario.getConditions()) {
+        for (Condition condition : scenario.getConditions().values()) {
             if (!checkCondition(condition, snapshot)) {
                 return false;
             }
@@ -63,7 +63,7 @@ public class SensorsSnapshotHandlerImpl implements SensorsSnapshotHandler {
         };
     }
 
-    private void runActions(String hubId, String scenarioName, List<Action> actions) {
+    private void runActions(String hubId, String scenarioName, Collection<Action> actions) {
         actions.forEach(action -> hubActionSender.sendAction(hubId, scenarioName, action));
     }
 }

@@ -30,8 +30,8 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                     .conditions(mapToConditions(payload.getConditions(), event.getHubId()))
                     .actions(mapToActions(payload.getActions(), event.getHubId()))
                     .build();
-            scenario.getConditions().forEach(condition -> condition.setScenario(scenario));
-            scenario.getActions().forEach(action -> action.setScenario(scenario));
+            scenario.getConditions().values().forEach(condition -> condition.setScenario(scenario));
+            scenario.getActions().values().forEach(action -> action.setScenario(scenario));
             scenarioRepository.save(scenario);
         }
     }
@@ -41,20 +41,29 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
         return ScenarioAddedEventAvro.class.getName();
     }
 
-    private List<Condition> mapToConditions(List<ScenarioConditionAvro> conditions, String hubId) {
+    private Map<String, Condition> mapToConditions(List<ScenarioConditionAvro> conditions, String hubId) {
         List<String> ids = conditions.stream()
                 .map(ScenarioConditionAvro::getSensorId)
                 .toList();
         if (sensorRepository.existsByIdInAndHubId(ids, hubId)) {
-            Map<String, Sensor> sensors = sensorRepository.findAllByIdInAndHubId(ids, hubId).stream().collect(Collectors.toMap(Sensor::getId, Function.identity()));
-            return conditions.stream()
+            List<Sensor> sensors = sensorRepository.findAllByIdInAndHubId(ids, hubId);
+            Map<String, Sensor> sensorMap = sensors.stream()
+                    .collect(Collectors.toMap(Sensor::getId, Function.identity()));
+
+            List<Condition> conditionList = conditions.stream()
                     .map(condition -> Condition.builder()
-                            .sensor(sensors.get(condition.getSensorId()))
+                            .sensor(sensorMap.get(condition.getSensorId()))
                             .type(condition.getType())
                             .operation(condition.getOperation())
                             .value(mapToValue(condition.getType()))
                             .build())
                     .toList();
+
+            return conditionList.stream()
+                    .collect(Collectors.toMap(
+                            condition -> condition.getSensor().getId(),
+                            Function.identity()
+                    ));
         } else {
             throw new NoSuchElementException("No value present");
         }
@@ -73,19 +82,28 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
         }
     }
 
-    private List<Action> mapToActions(List<DeviceActionAvro> actions, String hubId) {
+    private Map<String, Action> mapToActions(List<DeviceActionAvro> actions, String hubId) {
         List<String> ids = actions.stream()
                 .map(DeviceActionAvro::getSensorId)
                 .toList();
         if (sensorRepository.existsByIdInAndHubId(ids, hubId)) {
-            Map<String, Sensor> sensors = sensorRepository.findAllByIdInAndHubId(ids, hubId).stream().collect(Collectors.toMap(Sensor::getId, Function.identity()));
-            return actions.stream()
+            List<Sensor> sensors = sensorRepository.findAllByIdInAndHubId(ids, hubId);
+            Map<String, Sensor> sensorMap = sensors.stream()
+                    .collect(Collectors.toMap(Sensor::getId, Function.identity()));
+
+            List<Action> actionList = actions.stream()
                     .map(action -> Action.builder()
-                            .sensor(sensors.get(action.getSensorId()))
+                            .sensor(sensorMap.get(action.getSensorId()))
                             .type(action.getType())
                             .value(action.getValue())
                             .build())
                     .toList();
+
+            return actionList.stream()
+                    .collect(Collectors.toMap(
+                            action -> action.getSensor().getId(),
+                            Function.identity()
+                    ));
         } else {
             throw new NoSuchElementException("No value present");
         }
