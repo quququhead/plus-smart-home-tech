@@ -12,6 +12,8 @@ import java.util.List;
 @Setter
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Scenario {
     @Id

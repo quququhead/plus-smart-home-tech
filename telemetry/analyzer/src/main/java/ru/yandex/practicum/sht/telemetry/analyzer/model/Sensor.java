@@ -12,6 +12,8 @@ import java.util.Set;
 @Setter
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Sensor {
     @Id

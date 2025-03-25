@@ -11,6 +11,8 @@ import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
 @Setter
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Action {
     @Id

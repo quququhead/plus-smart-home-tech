@@ -12,6 +12,8 @@ import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
 @Setter
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Condition {
     @Id
