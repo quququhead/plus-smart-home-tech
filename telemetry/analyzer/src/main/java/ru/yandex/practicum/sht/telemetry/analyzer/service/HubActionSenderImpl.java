@@ -1,6 +1,7 @@
 package ru.yandex.practicum.sht.telemetry.analyzer.service;
 
 import com.google.protobuf.Timestamp;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
@@ -12,6 +13,7 @@ import ru.yandex.practicum.sht.telemetry.analyzer.model.Action;
 import java.time.Instant;
 
 @Service
+@Slf4j
 public class HubActionSenderImpl implements HubActionSender {
 
     private final HubRouterControllerBlockingStub hubRouterClient;
@@ -35,6 +37,8 @@ public class HubActionSenderImpl implements HubActionSender {
                         .setNanos(now.getNano())
                         .build())
                 .build();
+        log.info("Send action to Hub Router: {} sensor: {} action: {}",
+                hubId, action.getSensor().getId(), action.getType().name());
         hubRouterClient.handleDeviceAction(deviceActionRequest);
     }
 }

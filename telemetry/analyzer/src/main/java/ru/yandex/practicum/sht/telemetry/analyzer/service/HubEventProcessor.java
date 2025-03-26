@@ -1,5 +1,6 @@
 package ru.yandex.practicum.sht.telemetry.analyzer.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -19,6 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class HubEventProcessor implements Runnable {
 
     private static final Duration CONSUME_ATTEMPT_TIMEOUT = Duration.ofSeconds(5);
@@ -48,6 +50,8 @@ public class HubEventProcessor implements Runnable {
             while (true) {
                 ConsumerRecords<String, HubEventAvro> records = kafkaHubConsumer.poll(CONSUME_ATTEMPT_TIMEOUT);
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
+                    log.info("topic = {}, partition = {}, offset = {}, record = {}",
+                            record.topic(), record.partition(), record.offset(), record.value());
                     HubEventHandler handler = hubEventHandlers.get(record.value().getPayload().getClass().getName());
                     if (handler != null) {
                         handler.handle(record.value());
@@ -56,7 +60,8 @@ public class HubEventProcessor implements Runnable {
                 }
                 kafkaHubConsumer.commitAsync();
             }
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            log.error(exception.getMessage(), exception);
         } finally {
             try {
                 kafkaHubConsumer.commitSync(currentOffsets);

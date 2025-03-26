@@ -1,6 +1,7 @@
 package ru.yandex.practicum.sht.telemetry.analyzer.service.handler.hub;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 import ru.yandex.practicum.sht.telemetry.analyzer.model.*;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ScenarioAddedEventHandler implements HubEventHandler {
 
     private final ScenarioRepository scenarioRepository;
@@ -23,6 +25,7 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
     @Override
     public void handle(HubEventAvro event) {
         ScenarioAddedEventAvro payload = (ScenarioAddedEventAvro) event.getPayload();
+        log.info("Scenario added: {}", payload);
         if (scenarioRepository.findByHubIdAndName(event.getHubId(), payload.getName()).isEmpty()) {
             Scenario scenario = Scenario.builder()
                     .hubId(event.getHubId())

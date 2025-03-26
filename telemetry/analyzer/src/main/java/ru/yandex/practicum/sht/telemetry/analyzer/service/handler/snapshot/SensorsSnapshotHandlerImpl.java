@@ -1,6 +1,7 @@
 package ru.yandex.practicum.sht.telemetry.analyzer.service.handler.snapshot;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 import ru.yandex.practicum.sht.telemetry.analyzer.model.Action;
@@ -13,6 +14,7 @@ import java.util.Collection;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class SensorsSnapshotHandlerImpl implements SensorsSnapshotHandler {
 
     private final ScenarioRepository scenarioRepository;
@@ -20,6 +22,7 @@ public class SensorsSnapshotHandlerImpl implements SensorsSnapshotHandler {
 
     public void handle(SensorsSnapshotAvro snapshot) {
         String hubId = snapshot.getHubId();
+        log.info("Handle snapshot for hubId: {}", hubId);
         scenarioRepository.findByHubId(hubId).stream()
                 .filter(scenario -> isReady(scenario, snapshot))
                 .forEach(scenario -> runActions(hubId, scenario.getName(), scenario.getActions().values()));
@@ -37,6 +40,7 @@ public class SensorsSnapshotHandlerImpl implements SensorsSnapshotHandler {
     private boolean checkCondition(Condition condition, SensorsSnapshotAvro snapshot) {
         SensorStateAvro sensorState = snapshot.getSensorsState().get(condition.getSensor().getId());
         if (sensorState == null) {
+            log.warn("No data for sensorId {} in the snapshot", condition.getSensor().getId());
             return false;
         }
         return switch (condition.getType()) {
