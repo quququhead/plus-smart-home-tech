@@ -39,6 +39,9 @@ public class HubActionSenderImpl implements HubActionSender {
                 .build();
         log.info("Send action to Hub Router: {} sensor: {} action: {}",
                 hubId, sensorId, action.getType().name());
-        hubRouterClient.handleDeviceAction(deviceActionRequest);
+        try {
+            hubRouterClient.handleDeviceAction(deviceActionRequest);
+        } catch (Exception ignored) {
+        }
     }
 }
