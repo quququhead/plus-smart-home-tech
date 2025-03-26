@@ -67,10 +67,8 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
             if ((Boolean) value) {
                 return 1;
             }
-            return 0;
-        } else {
-            return null;
         }
+        return 0;
     }
 
     private Map<String, Action> mapToActions(List<DeviceActionAvro> actions, String hubId) {
@@ -83,7 +81,7 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                             DeviceActionAvro::getSensorId,
                             action -> Action.builder()
                             .type(action.getType())
-                            .value(action.getValue())
+                            .value(action.getValue() == null ? 0 : action.getValue())
                             .build()
                     ));
         } else {
