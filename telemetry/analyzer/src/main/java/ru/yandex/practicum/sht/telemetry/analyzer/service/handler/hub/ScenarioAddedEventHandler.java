@@ -32,10 +32,7 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                     .conditions(mapToConditions(payload.getConditions(), event.getHubId()))
                     .actions(mapToActions(payload.getActions(), event.getHubId()))
                     .build();
-            log.info("Проставление сущностей");
-            log.info("Запрос на добавление в базу");
             scenarioRepository.save(scenario);
-            log.info("Сценарий добавлен");
         }
     }
 
