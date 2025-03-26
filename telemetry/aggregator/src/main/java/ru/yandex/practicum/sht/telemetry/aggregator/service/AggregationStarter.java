@@ -31,7 +31,7 @@ public class AggregationStarter {
     private final EnumMap<TopicType, String> consumerTopics;
     private final EnumMap<TopicType, String> producerTopics;
     private final AggregatorService aggregatorService;
-    private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
+    private final Map<TopicPartition, OffsetAndMetadata> currentOffsets;
 
     public AggregationStarter(KafkaConfig kafka, KafkaConsumer<String, SensorEventAvro> kafkaConsumer, KafkaProducer<String, SpecificRecordBase> kafkaProducer, AggregatorService aggregatorService) {
         this.consumer = kafkaConsumer;
@@ -39,6 +39,7 @@ public class AggregationStarter {
         this.consumerTopics = kafka.getConsumer().getTopics();
         this.producerTopics = kafka.getProducer().getTopics();
         this.aggregatorService = aggregatorService;
+        this.currentOffsets = new HashMap<>();
     }
 
     public void start() {
