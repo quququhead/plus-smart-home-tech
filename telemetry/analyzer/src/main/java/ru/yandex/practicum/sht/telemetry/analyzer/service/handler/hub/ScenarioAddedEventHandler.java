@@ -52,7 +52,7 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                             condition -> Condition.builder()
                                     .type(condition.getType())
                                     .operation(condition.getOperation())
-                                    .value(mapToValue(condition.getType()))
+                                    .value(mapToValue(condition.getValue()))
                                     .build()
                     ));
         } else {
