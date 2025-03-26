@@ -41,7 +41,8 @@ public class HubActionSenderImpl implements HubActionSender {
                 hubId, sensorId, action.getType().name());
         try {
             hubRouterClient.handleDeviceAction(deviceActionRequest);
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            log.error(exception.getMessage(), exception);
         }
     }
 }

@@ -29,6 +29,7 @@ public class SensorsSnapshotHandlerImpl implements SensorsSnapshotHandler {
     }
 
     private boolean isReady(Scenario scenario, SensorsSnapshotAvro snapshot) {
+        log.info("Conditions: {}", scenario.getConditions().toString());
         for (String sensorId : scenario.getConditions().keySet()) {
             if (!checkCondition(sensorId, scenario.getConditions().get(sensorId), snapshot)) {
                 return false;
@@ -43,6 +44,7 @@ public class SensorsSnapshotHandlerImpl implements SensorsSnapshotHandler {
             log.warn("No data for sensorId {} in the snapshot", sensorId);
             return false;
         }
+        log.info("Method checkCondition is working");
         return switch (condition.getType()) {
             case MOTION -> calculateCondition(((MotionSensorAvro) sensorState.getData()).getMotion() ? 1 : 0,
                     condition.getValue(), condition.getOperation());
