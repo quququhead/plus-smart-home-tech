@@ -22,13 +22,13 @@ public class HubActionSenderImpl implements HubActionSender {
         this.hubRouterClient = hubRouterClient;
     }
 
-    public void sendAction(String hubId, String scenarioName, Action action) {
+    public void sendAction(String hubId, String scenarioName, String sensorId, Action action) {
         Instant now = Instant.now();
         DeviceActionRequest deviceActionRequest = DeviceActionRequest.newBuilder()
                 .setHubId(hubId)
                 .setScenarioName(scenarioName)
                 .setAction(DeviceActionProto.newBuilder()
-                        .setSensorId(action.getSensor().getId())
+                        .setSensorId(sensorId)
                         .setType(ActionTypeProto.valueOf(action.getType().name()))
                         .setValue(action.getValue())
                         .build())
@@ -38,7 +38,7 @@ public class HubActionSenderImpl implements HubActionSender {
                         .build())
                 .build();
         log.info("Send action to Hub Router: {} sensor: {} action: {}",
-                hubId, action.getSensor().getId(), action.getType().name());
+                hubId, sensorId, action.getType().name());
         hubRouterClient.handleDeviceAction(deviceActionRequest);
     }
 }

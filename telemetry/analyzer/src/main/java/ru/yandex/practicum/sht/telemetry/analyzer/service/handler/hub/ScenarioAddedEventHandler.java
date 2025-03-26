@@ -11,7 +11,6 @@ import ru.yandex.practicum.sht.telemetry.analyzer.repository.SensorRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -50,23 +49,14 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                 .map(ScenarioConditionAvro::getSensorId)
                 .toList();
         if (sensorRepository.existsByIdInAndHubId(ids, hubId)) {
-            List<Sensor> sensors = sensorRepository.findAllByIdInAndHubId(ids, hubId);
-            Map<String, Sensor> sensorMap = sensors.stream()
-                    .collect(Collectors.toMap(Sensor::getId, Function.identity()));
-
-            List<Condition> conditionList = conditions.stream()
-                    .map(condition -> Condition.builder()
-                            .sensor(sensorMap.get(condition.getSensorId()))
-                            .type(condition.getType())
-                            .operation(condition.getOperation())
-                            .value(mapToValue(condition.getType()))
-                            .build())
-                    .toList();
-
-            return conditionList.stream()
+            return conditions.stream()
                     .collect(Collectors.toMap(
-                            condition -> condition.getSensor().getId(),
-                            Function.identity()
+                            ScenarioConditionAvro::getSensorId,
+                            condition -> Condition.builder()
+                                    .type(condition.getType())
+                                    .operation(condition.getOperation())
+                                    .value(mapToValue(condition.getType()))
+                                    .build()
                     ));
         } else {
             throw new NoSuchElementException("No value present");
@@ -91,22 +81,13 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                 .map(DeviceActionAvro::getSensorId)
                 .toList();
         if (sensorRepository.existsByIdInAndHubId(ids, hubId)) {
-            List<Sensor> sensors = sensorRepository.findAllByIdInAndHubId(ids, hubId);
-            Map<String, Sensor> sensorMap = sensors.stream()
-                    .collect(Collectors.toMap(Sensor::getId, Function.identity()));
-
-            List<Action> actionList = actions.stream()
-                    .map(action -> Action.builder()
-                            .sensor(sensorMap.get(action.getSensorId()))
+            return actions.stream()
+                    .collect(Collectors.toMap(
+                            DeviceActionAvro::getSensorId,
+                            action -> Action.builder()
                             .type(action.getType())
                             .value(action.getValue())
-                            .build())
-                    .toList();
-
-            return actionList.stream()
-                    .collect(Collectors.toMap(
-                            action -> action.getSensor().getId(),
-                            Function.identity()
+                            .build()
                     ));
         } else {
             throw new NoSuchElementException("No value present");

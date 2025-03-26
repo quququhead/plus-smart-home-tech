@@ -7,7 +7,6 @@ import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
 
 @Entity
 @Table(name = "actions")
-@SecondaryTable(name = "scenario_actions", pkJoinColumns = @PrimaryKeyJoinColumn(name = "action_id"))
 @Getter
 @Setter
 @ToString
@@ -24,12 +23,4 @@ public class Action {
     ActionTypeAvro type;
 
     Integer value;
-
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "scenario_id", table = "scenario_actions")
-    Scenario scenario;
-
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "sensor_id", table = "scenario_actions")
-    Sensor sensor;
 }

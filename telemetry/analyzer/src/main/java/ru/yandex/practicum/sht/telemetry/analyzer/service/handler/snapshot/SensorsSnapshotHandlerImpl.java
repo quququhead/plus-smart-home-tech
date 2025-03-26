@@ -10,7 +10,7 @@ import ru.yandex.practicum.sht.telemetry.analyzer.model.Scenario;
 import ru.yandex.practicum.sht.telemetry.analyzer.repository.ScenarioRepository;
 import ru.yandex.practicum.sht.telemetry.analyzer.service.HubActionSender;
 
-import java.util.Collection;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -25,22 +25,22 @@ public class SensorsSnapshotHandlerImpl implements SensorsSnapshotHandler {
         log.info("Handle snapshot for hubId: {}", hubId);
         scenarioRepository.findByHubId(hubId).stream()
                 .filter(scenario -> isReady(scenario, snapshot))
-                .forEach(scenario -> runActions(hubId, scenario.getName(), scenario.getActions().values()));
+                .forEach(scenario -> runActions(hubId, scenario.getName(), scenario.getActions()));
     }
 
     private boolean isReady(Scenario scenario, SensorsSnapshotAvro snapshot) {
-        for (Condition condition : scenario.getConditions().values()) {
-            if (!checkCondition(condition, snapshot)) {
+        for (String sensorId : scenario.getConditions().keySet()) {
+            if (!checkCondition(sensorId, scenario.getConditions().get(sensorId), snapshot)) {
                 return false;
             }
         }
         return true;
     }
 
-    private boolean checkCondition(Condition condition, SensorsSnapshotAvro snapshot) {
-        SensorStateAvro sensorState = snapshot.getSensorsState().get(condition.getSensor().getId());
+    private boolean checkCondition(String sensorId, Condition condition, SensorsSnapshotAvro snapshot) {
+        SensorStateAvro sensorState = snapshot.getSensorsState().get(sensorId);
         if (sensorState == null) {
-            log.warn("No data for sensorId {} in the snapshot", condition.getSensor().getId());
+            log.warn("No data for sensorId {} in the snapshot", sensorId);
             return false;
         }
         return switch (condition.getType()) {
@@ -67,7 +67,7 @@ public class SensorsSnapshotHandlerImpl implements SensorsSnapshotHandler {
         };
     }
 
-    private void runActions(String hubId, String scenarioName, Collection<Action> actions) {
-        actions.forEach(action -> hubActionSender.sendAction(hubId, scenarioName, action));
+    private void runActions(String hubId, String scenarioName, Map<String, Action> actions) {
+        actions.keySet().forEach(sensorId -> hubActionSender.sendAction(hubId, scenarioName, sensorId, actions.get(sensorId)));
     }
 }
