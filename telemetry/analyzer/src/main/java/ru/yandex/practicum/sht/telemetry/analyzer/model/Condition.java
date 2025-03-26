@@ -8,6 +8,7 @@ import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
 
 @Entity
 @Table(name = "conditions")
+@SecondaryTable(name = "scenario_conditions", pkJoinColumns = @PrimaryKeyJoinColumn(name = "condition_id"))
 @Getter
 @Setter
 @ToString
@@ -29,8 +30,10 @@ public class Condition {
     Integer value;
 
     @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "scenario_id", table = "scenario_conditions")
     Scenario scenario;
 
     @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "sensor_id", table = "scenario_conditions")
     Sensor sensor;
 }
