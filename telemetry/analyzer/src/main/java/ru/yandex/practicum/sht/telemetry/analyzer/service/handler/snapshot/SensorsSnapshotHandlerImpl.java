@@ -50,7 +50,7 @@ public class SensorsSnapshotHandlerImpl implements SensorsSnapshotHandler {
                     condition.getValue(), condition.getOperation());
             case SWITCH -> calculateCondition(((SwitchSensorAvro) sensorState.getData()).getState() ? 1 : 0,
                     condition.getValue(), condition.getOperation());
-            case TEMPERATURE -> calculateCondition(((TemperatureSensorAvro) sensorState.getData()).getTemperatureC(),
+            case TEMPERATURE -> calculateCondition(((ClimateSensorAvro) sensorState.getData()).getTemperatureC(),
                     condition.getValue(), condition.getOperation());
             case CO2LEVEL -> calculateCondition(((ClimateSensorAvro) sensorState.getData()).getCo2Level(),
                     condition.getValue(), condition.getOperation());
