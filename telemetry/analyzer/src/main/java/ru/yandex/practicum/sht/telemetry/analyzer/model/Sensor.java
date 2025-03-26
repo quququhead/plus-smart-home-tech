@@ -22,12 +22,12 @@ public class Sensor {
 
     String hubId;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @MapKeyColumn(table = "scenario_conditions", name = "scenario_id")
     @JoinTable(name = "scenario_conditions", joinColumns = @JoinColumn(name = "sensor_id"), inverseJoinColumns = @JoinColumn(name = "condition_id"))
     private Map<Long, Condition> conditions = new HashMap<>();
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @MapKeyColumn(table = "scenario_actions", name = "scenario_id")
     @JoinTable(name = "scenario_actions", joinColumns = @JoinColumn(name = "sensor_id"), inverseJoinColumns = @JoinColumn(name = "action_id"))
     private Map<Long, Action> actions = new HashMap<>();
