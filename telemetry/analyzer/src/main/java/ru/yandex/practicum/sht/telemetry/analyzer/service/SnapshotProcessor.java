@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.sht.telemetry.analyzer.configuration.KafkaConfig;
@@ -50,6 +51,8 @@ public class SnapshotProcessor {
                 }
                 kafkaSnapshotConsumer.commitAsync();
             }
+        } catch (WakeupException exception) {
+            log.warn("WakeUpException");
         } catch (Exception exception) {
             log.error(exception.getMessage(), exception);
         } finally {
@@ -57,6 +60,7 @@ public class SnapshotProcessor {
                 kafkaSnapshotConsumer.commitSync(currentOffsets);
             } finally {
                 kafkaSnapshotConsumer.close(CLOSE_TIMEOUT);
+                log.info("Kafka consumer has closed");
             }
         }
     }

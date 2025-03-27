@@ -1,5 +1,6 @@
 package ru.yandex.practicum.sht.telemetry.aggregator.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -8,6 +9,7 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
@@ -21,6 +23,7 @@ import static ru.yandex.practicum.sht.telemetry.aggregator.configuration.KafkaCo
 import static ru.yandex.practicum.sht.telemetry.aggregator.configuration.KafkaConfig.TopicType.SNAPSHOTS_EVENTS;
 
 @Component
+@Slf4j
 public class AggregationStarter {
 
     private static final Duration CONSUME_ATTEMPT_TIMEOUT = Duration.ofSeconds(5);
@@ -64,7 +67,10 @@ public class AggregationStarter {
                 }
                 consumer.commitAsync();
             }
-        } catch (Exception ignored) {
+        } catch (WakeupException exception) {
+            log.warn("WakeUpException");
+        } catch (Exception exception) {
+            log.error(exception.getMessage(), exception);
         } finally {
             try {
                 consumer.commitSync(currentOffsets);
@@ -72,6 +78,7 @@ public class AggregationStarter {
             } finally {
                 consumer.close(CLOSE_TIMEOUT);
                 producer.close(CLOSE_TIMEOUT);
+                log.info("Kafka consumer and producer have closed");
             }
         }
     }

@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.sht.telemetry.analyzer.configuration.KafkaConfig;
@@ -60,6 +61,8 @@ public class HubEventProcessor implements Runnable {
                 }
                 kafkaHubConsumer.commitAsync();
             }
+        } catch (WakeupException exception) {
+            log.warn("WakeUpException");
         } catch (Exception exception) {
             log.error(exception.getMessage(), exception);
         } finally {
@@ -67,6 +70,7 @@ public class HubEventProcessor implements Runnable {
                 kafkaHubConsumer.commitSync(currentOffsets);
             } finally {
                 kafkaHubConsumer.close(CLOSE_TIMEOUT);
+                log.info("Kafka consumer has closed");
             }
         }
     }
