@@ -17,5 +17,3 @@ aggregator:
         value.serializer: ru.yandex.practicum.kafka.serialization.GeneralAvroSerializer
       topics:
         snapshots-events: telemetry.snapshots.v1
-server:
-  port: 8090
