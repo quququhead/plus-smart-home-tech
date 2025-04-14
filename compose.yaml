@@ -34,15 +34,15 @@ services:
                              --bootstrap-server kafka:29092'"
     init: true
 
-  analyzer-db:
+  smarthometech-db:
     image: postgres:16.1
-    container_name: postgres-shm-telemetry-analyzer-db
+    container_name: postgres-shm
     ports:
       - "6541:5432"
     environment:
-      - POSTGRES_PASSWORD=analyzer
-      - POSTGRES_USER=analyzer
-      - POSTGRES_DB=analyzer-db
+      - POSTGRES_PASSWORD=smarthometech
+      - POSTGRES_USER=smarthometech
+      - POSTGRES_DB=smarthometech-db
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
