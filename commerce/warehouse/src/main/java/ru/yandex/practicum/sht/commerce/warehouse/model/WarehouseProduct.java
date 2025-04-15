@@ -10,7 +10,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.UUID;
 
 @Entity
-@Table(schema = "warehouse", name = "product")
+@Table(name = "product")
 @Getter
 @Setter
 @ToString

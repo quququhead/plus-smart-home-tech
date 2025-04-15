@@ -1,6 +1,4 @@
-CREATE SCHEMA IF NOT EXISTS warehouse;
-
-CREATE TABLE IF NOT EXISTS warehouse.product (
+CREATE TABLE IF NOT EXISTS product (
     product_id UUID PRIMARY KEY,
     fragile BOOLEAN NOT NULL,
     width DOUBLE PRECISION NOT NULL,

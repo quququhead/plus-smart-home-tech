@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
-@Table(schema = "shopping_store", name = "product")
+@Table(name = "product")
 @Getter
 @Setter
 @ToString

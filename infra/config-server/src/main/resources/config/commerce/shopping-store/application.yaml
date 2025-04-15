@@ -6,13 +6,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        default_schema: shopping_store
     show_sql: true
   sql:
     init:
       mode: always
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:6541/smarthometech-db
-    username: smarthometech
-    password: smarthometech
+    url: jdbc:postgresql://localhost:6542/shopping-store-db
+    username: shopping-store
+    password: shopping-store

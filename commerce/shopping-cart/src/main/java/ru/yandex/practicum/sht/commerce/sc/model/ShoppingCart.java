@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(schema = "shopping_cart", name = "cart")
+@Table(name = "cart")
 @Getter
 @Setter
 @ToString
@@ -27,7 +27,7 @@ public class ShoppingCart {
     boolean active = true;
 
     @ElementCollection
-    @CollectionTable(schema = "shopping_cart", name = "product", joinColumns = @JoinColumn(name = "cart_id"))
+    @CollectionTable(name = "product", joinColumns = @JoinColumn(name = "cart_id"))
     @MapKeyColumn(name = "product_id")
     @Column(name = "quantity")
     Map<UUID, Long> products;

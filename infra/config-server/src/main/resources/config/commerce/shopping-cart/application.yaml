@@ -6,13 +6,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        default_schema: shopping_cart
     show_sql: true
   sql:
     init:
       mode: always
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:6541/smarthometech-db
-    username: smarthometech
-    password: smarthometech
+    url: jdbc:postgresql://localhost:6543/shopping-cart-db
+    username: shopping-cart
+    password: shopping-cart
