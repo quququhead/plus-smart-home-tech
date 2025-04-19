@@ -1,4 +1,4 @@
-package ru.yandex.practicum;
+package ru.yandex.practicum.sht.infra.ds;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
