@@ -1,6 +1,6 @@
 spring:
   application:
-    name: warehouse
+    name: gateway
   config:
     import: "configserver:"
   cloud:
@@ -22,5 +22,6 @@ eureka:
     hostname: localhost
     instance-id: "${spring.application.name}:${random.value}"
     leaseRenewalIntervalInSeconds: 10
+
 server:
-  port: 61363
+  port: 8080
