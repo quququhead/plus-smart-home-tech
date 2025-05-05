@@ -16,8 +16,15 @@ public class ErrorHandler {
         return getErrorResponse(exception, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoOrderBookingFoundException(NoOrderBookingFoundException exception) {
+        return getErrorResponse(exception, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler({NoSpecifiedProductInWarehouseException.class,
             ProductInShoppingCartLowQuantityInWarehouse.class,
+            ProductInShoppingCartNotInWarehouse.class,
             SpecifiedProductAlreadyInWarehouseException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequestException(RuntimeException exception) {
