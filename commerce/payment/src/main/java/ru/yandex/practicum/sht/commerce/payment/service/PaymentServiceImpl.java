@@ -5,7 +5,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.sht.commerce.ia.dto.order.OrderDto;
 import ru.yandex.practicum.sht.commerce.ia.dto.payment.PaymentDto;
 import ru.yandex.practicum.sht.commerce.ia.dto.payment.PaymentState;
-import ru.yandex.practicum.sht.commerce.ia.dto.ss.ProductDto;
 import ru.yandex.practicum.sht.commerce.payment.exception.NoOrderFoundException;
 import ru.yandex.practicum.sht.commerce.payment.exception.NotEnoughInfoInOrderToCalculateException;
 import ru.yandex.practicum.sht.commerce.payment.feign.OrderClient;
@@ -15,7 +14,6 @@ import ru.yandex.practicum.sht.commerce.payment.model.Payment;
 import ru.yandex.practicum.sht.commerce.payment.repository.PaymentRepository;
 
 import java.math.BigDecimal;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -83,12 +81,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional(readOnly = true)
     public BigDecimal calculateProductCoast(OrderDto order) {
-        BigDecimal productCost = BigDecimal.ZERO;
-        for (Map.Entry<UUID, Long> product : order.getProducts().entrySet()) {
-            ProductDto productDto = shoppingStoreClient.getProduct(product.getKey());
-            productCost = productCost.add(BigDecimal.valueOf(product.getValue()).multiply(productDto.getPrice()));
-        }
-        return productCost;
+        return order.getProducts().entrySet().stream()
+                .map(e -> BigDecimal.valueOf(e.getValue()).multiply(shoppingStoreClient.getProduct(e.getKey()).getPrice()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     @Override

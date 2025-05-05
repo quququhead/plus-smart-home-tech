@@ -11,7 +11,6 @@ import ru.yandex.practicum.sht.commerce.warehouse.exception.NoSpecifiedProductIn
 import ru.yandex.practicum.sht.commerce.warehouse.exception.ProductInShoppingCartLowQuantityInWarehouse;
 import ru.yandex.practicum.sht.commerce.warehouse.exception.SpecifiedProductAlreadyInWarehouseException;
 import ru.yandex.practicum.sht.commerce.warehouse.feign.ShoppingStoreClient;
-import ru.yandex.practicum.sht.commerce.warehouse.mapper.OrderBookingMapper;
 import ru.yandex.practicum.sht.commerce.warehouse.mapper.WarehouseMapper;
 import ru.yandex.practicum.sht.commerce.warehouse.model.Dimension;
 import ru.yandex.practicum.sht.commerce.warehouse.model.OrderBooking;
@@ -38,11 +37,9 @@ public class WarehouseServiceImpl implements WarehouseService {
     private final WarehouseProductRepository warehouseProductRepository;
     private final OrderBookingRepository orderBookingRepository;
     private final WarehouseMapper warehouseMapper;
-    private final OrderBookingMapper orderBookingMapper;
     private final ShoppingStoreClient shoppingStoreClient;
 
-    public WarehouseServiceImpl(OrderBookingMapper orderBookingMapper, WarehouseProductRepository warehouseProductRepository, OrderBookingRepository orderBookingRepository, WarehouseMapper warehouseMapper, ShoppingStoreClient shoppingStoreClient) {
-        this.orderBookingMapper = orderBookingMapper;
+    public WarehouseServiceImpl(WarehouseProductRepository warehouseProductRepository, OrderBookingRepository orderBookingRepository, WarehouseMapper warehouseMapper, ShoppingStoreClient shoppingStoreClient) {
         this.warehouseProductRepository = warehouseProductRepository;
         this.orderBookingRepository = orderBookingRepository;
         this.warehouseMapper = warehouseMapper;
@@ -62,7 +59,7 @@ public class WarehouseServiceImpl implements WarehouseService {
         OrderBooking orderBooking = getOrderBookingByOrderId(request.getOrderId());
         orderBooking.setDeliveryId(request.getDeliveryId());
         orderBookingRepository.save(orderBooking);
-    } //TODO EZ
+    }
 
     private OrderBooking getOrderBookingByOrderId(UUID orderId) {
         return orderBookingRepository.findByOrderId(orderId)
@@ -73,15 +70,15 @@ public class WarehouseServiceImpl implements WarehouseService {
     public void acceptReturn(Map<UUID, Long> products) {
         Map<UUID, WarehouseProduct> warehouseProducts = warehouseProductRepository.findAllById(products.keySet()).stream()
                 .collect(Collectors.toMap(WarehouseProduct::getProductId, Function.identity()));
-        for (Map.Entry<UUID, Long> product : products.entrySet()) {
-            if (!warehouseProducts.containsKey(product.getKey())) {
-                throw new NoSpecifiedProductInWarehouseException(String.format("The product %s is not in warehouse", product.getKey()));
+        products.forEach((key, amount) -> {
+            if (!warehouseProducts.containsKey(key)) {
+                throw new NoSpecifiedProductInWarehouseException(String.format("The product %s is not in warehouse", key));
             }
-            WarehouseProduct warehouseProduct = warehouseProducts.get(product.getKey());
-            long newQuantity = warehouseProduct.getQuantity() + product.getValue();
+            WarehouseProduct warehouseProduct = warehouseProducts.get(key);
+            long newQuantity = warehouseProduct.getQuantity() + amount;
             warehouseProduct.setQuantity(newQuantity);
-            shoppingStoreClient.updateProductQuantityState(getProductQuantityStateRequest(newQuantity, product.getKey()));
-        }
+            shoppingStoreClient.updateProductQuantityState(getProductQuantityStateRequest(newQuantity, key));
+        });
         warehouseProductRepository.saveAll(warehouseProducts.values());
     }
 
@@ -138,7 +135,6 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .build());
         return bookedProducts;
     }
-
 
     private void processProduct(Map.Entry<UUID, Long> product, Map<UUID, WarehouseProduct> warehouseProducts, BookedProductsDto bookedProductsDto, boolean isBooking) {
         UUID id = product.getKey();

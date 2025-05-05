@@ -87,24 +87,19 @@ public class DeliveryServiceImpl implements DeliveryService {
         Address fromAddress = delivery.getFromAddress();
         Address toAddress = delivery.getToAddress();
         BigDecimal deliveryCost = BASE_COEFF;
-
         deliveryCost = switch (fromAddress.toString()) {
             case "ADDRESS_1" -> deliveryCost.multiply(ADDRESS_1_COEFF);
             case "ADDRESS_2" -> deliveryCost.add(deliveryCost.multiply(ADDRESS_2_COEFF));
             default -> deliveryCost;
         };
-
         if (request.isFragile()) {
             deliveryCost = deliveryCost.add(deliveryCost.multiply(FRAGILE_COEFF));
         }
-
         deliveryCost = deliveryCost.add(BigDecimal.valueOf(request.getDeliveryWeight()).multiply(WEIGHT_COEFF));
         deliveryCost = deliveryCost.add(BigDecimal.valueOf(request.getDeliveryVolume()).multiply(VOLUME_COEFF));
-
         if (!fromAddress.getStreet().equals(toAddress.getStreet())) {
             deliveryCost = deliveryCost.add(deliveryCost.multiply(STREET_COEFF));
         }
-
         return deliveryCost;
     }
 
