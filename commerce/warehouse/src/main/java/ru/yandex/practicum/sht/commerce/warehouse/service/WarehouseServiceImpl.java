@@ -62,7 +62,7 @@ public class WarehouseServiceImpl implements WarehouseService {
         OrderBooking orderBooking = getOrderBookingByOrderId(request.getOrderId());
         orderBooking.setDeliveryId(request.getDeliveryId());
         orderBookingRepository.save(orderBooking);
-    }
+    } //TODO EZ
 
     private OrderBooking getOrderBookingByOrderId(UUID orderId) {
         return orderBookingRepository.findByOrderId(orderId)

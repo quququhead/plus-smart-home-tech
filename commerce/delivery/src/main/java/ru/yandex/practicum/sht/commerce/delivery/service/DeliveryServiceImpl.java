@@ -70,7 +70,6 @@ public class DeliveryServiceImpl implements DeliveryService {
                 .build());
         delivery.setDeliveryState(DeliveryState.IN_PROGRESS);
         deliveryRepository.save(delivery);
-        orderClient.assemblyOrder(orderId);
     }
 
     @Override

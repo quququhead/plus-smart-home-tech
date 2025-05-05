@@ -3,11 +3,15 @@ package ru.yandex.practicum.sht.commerce.order.service;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.sht.commerce.ia.dto.delivery.DeliveryDto;
+import ru.yandex.practicum.sht.commerce.ia.dto.delivery.dict.DeliveryState;
 import ru.yandex.practicum.sht.commerce.ia.dto.order.CreateNewOrderRequest;
 import ru.yandex.practicum.sht.commerce.ia.dto.order.OrderDto;
 import ru.yandex.practicum.sht.commerce.ia.dto.order.ProductReturnRequest;
 import ru.yandex.practicum.sht.commerce.ia.dto.order.dict.OrderState;
+import ru.yandex.practicum.sht.commerce.ia.dto.payment.PaymentDto;
 import ru.yandex.practicum.sht.commerce.ia.dto.warehouse.AssemblyProductsForOrderRequest;
+import ru.yandex.practicum.sht.commerce.ia.dto.warehouse.BookedProductsDto;
 import ru.yandex.practicum.sht.commerce.order.exception.NoOrderFoundException;
 import ru.yandex.practicum.sht.commerce.order.exception.NotAuthorizedUserException;
 import ru.yandex.practicum.sht.commerce.order.feign.DeliveryClient;
@@ -53,17 +57,34 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto createOrder(CreateNewOrderRequest request) {
-        return orderMapper.mapToOrderDto(orderRepository.save(Order.builder()
+        Order order = orderRepository.save(Order.builder()
                 .shoppingCartId(request.getShoppingCart().getShoppingCartId())
                 .products(request.getShoppingCart().getProducts())
                 .state(OrderState.NEW)
-                .build()));
+                .build());
+        BookedProductsDto bookedProducts = warehouseClient.assemblyProducts(AssemblyProductsForOrderRequest.builder()
+                .products(request.getShoppingCart().getProducts())
+                .orderId(order.getOrderId())
+                .build());
+        DeliveryDto delivery = deliveryClient.createDelivery(DeliveryDto.builder()
+                .fromAddress(warehouseClient.getWarehouseAddress())
+                .toAddress(request.getDeliveryAddress())
+                .orderId(order.getOrderId())
+                .deliveryState(DeliveryState.CREATED)
+                .build());
+        PaymentDto payment = paymentClient.createPayment(orderMapper.mapToOrderDto(order));
+        order.setPaymentId(payment.getPaymentId());
+        order.setState(OrderState.ON_PAYMENT);
+        order.setDeliveryId(delivery.getDeliveryId());
+        order.setDeliveryWeight(bookedProducts.getDeliveryWeight());
+        order.setDeliveryVolume(bookedProducts.getDeliveryVolume());
+        order.setFragile(bookedProducts.isFragile());
+        return orderMapper.mapToOrderDto(orderRepository.save(order));
     }
 
     @Override
     public OrderDto returnOrder(ProductReturnRequest request) {
         Order order = getOrderById(request.getOrderId());
-        warehouseClient.acceptReturn(request.getProducts());
         order.setState(OrderState.PRODUCT_RETURNED);
         return orderMapper.mapToOrderDto(orderRepository.save(order));
     }
@@ -76,7 +97,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto payOrder(UUID orderId) {
         Order order = getOrderById(orderId);
-        paymentClient.refundPayment(order.getPaymentId());
         order.setState(OrderState.PAID);
         return orderMapper.mapToOrderDto(orderRepository.save(order));
     }
@@ -84,7 +104,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto payOrderFailed(UUID orderId) {
         Order order = getOrderById(orderId);
-        paymentClient.failPayment(order.getPaymentId());
         order.setState(OrderState.PAYMENT_FAILED);
         return orderMapper.mapToOrderDto(orderRepository.save(order));
     }
@@ -92,7 +111,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto deliverOrder(UUID orderId) {
         Order order = getOrderById(orderId);
-        deliveryClient.successDelivery(order.getDeliveryId());
         order.setState(OrderState.DELIVERED);
         return orderMapper.mapToOrderDto(orderRepository.save(order));
     }
@@ -100,7 +118,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto deliverOrderFailed(UUID orderId) {
         Order order = getOrderById(orderId);
-        deliveryClient.failDelivery(order.getDeliveryId());
         order.setState(OrderState.DELIVERY_FAILED);
         return orderMapper.mapToOrderDto(orderRepository.save(order));
     }
@@ -129,10 +146,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto assemblyOrder(UUID orderId) {
         Order order = getOrderById(orderId);
-        warehouseClient.assemblyProducts(AssemblyProductsForOrderRequest.builder()
-                .products(order.getProducts())
-                .orderId(order.getOrderId())
-                .build());
         order.setState(OrderState.ASSEMBLED);
         return orderMapper.mapToOrderDto(orderRepository.save(order));
     }
